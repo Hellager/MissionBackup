@@ -1,6 +1,3 @@
-//! # Cmd
-//! 
-//! `Cmd` module contains all commands that interacts with frontend.
 use tauri::{ command, AppHandle, Manager, State, Window };
 use serde::{ Serialize, Deserialize };
 use log::{ debug, info, warn, error };
@@ -8,35 +5,14 @@ use crate::core::state::{ HandlerStatus, MissionHandlerState };
 use crate::db::{ Record, mission::Mission };
 use chrono::NaiveDateTime;
 
-/// Struct for command response
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Response<T> {
-    /// Response status code
-    /// More like HTTP response status codes
     pub code: i32,
-
-    /// Response data
-    /// Should be able to be serialize and deserialize
     pub data: T,
-
-    /// Additional message
     pub msg: String,
 }
 
 impl<T> Response<T> {
-    /// Build a success response with genertic type.
-    /// 
-    /// # Arguments
-    /// 
-    /// # Examples
-    /// 
-    /// ```
-    /// use core::cmd::Response;
-    /// 
-    /// let response = Response::success(true);
-    /// 
-    /// println!("success response: {:?}", response);
-    /// ```
     pub fn success(value: T) -> Response<T> {
         Response {
             code: 200,
@@ -45,19 +21,6 @@ impl<T> Response<T> {
         }
     }
 
-    /// Build a success response with error message.
-    /// 
-    /// # Arguments
-    /// 
-    /// # Examples
-    /// 
-    /// ```
-    /// use core::cmd::Response;
-    /// 
-    /// let response = Response::<bool>::error(404, format!("{:?}", "not found"));
-    /// 
-    /// println!("error response: {:?}", response);
-    /// ```
     pub fn error(err_code: i32, err_msg: String) -> Response<bool> {
         Response {
             code: err_code,
@@ -67,24 +30,6 @@ impl<T> Response<T> {
     }
 }
 
-/// Command for init app.
-/// 
-/// # Arguments
-/// 
-/// # Examples
-/// 
-/// ```js
-/// import { invoke } from '@tauri-apps/api/tauri'
-/// 
-/// await invoke('init_app')
-///     .then(res => {
-///         console.log("init app success")
-///         console.log(res.data)
-///     })
-///     .catch(err => {
-///         console.error(err)
-///     })
-/// ```
 #[command]
 pub async fn init_app(window: Window, state: State<'_, MissionHandlerState>) -> Result<Response<HandlerStatus>, Response<bool>> {    
     let mut guard = state.0.lock().await;
@@ -122,17 +67,6 @@ pub async fn init_app(window: Window, state: State<'_, MissionHandlerState>) -> 
     Ok(Response::success(status))
 }
 
-/// Command for shutdown app.
-/// 
-/// # Arguments
-/// 
-/// # Examples
-/// 
-/// ```js
-/// import { invoke } from '@tauri-apps/api/tauri'
-/// 
-/// await invoke('shutdown_app')
-/// ```
 #[command]
 pub async fn shutdown_app(app: AppHandle, state: State<'_, MissionHandlerState>) -> Result<Response<bool>, Response<bool>> {
     let mut guard = state.0.lock().await;
@@ -150,23 +84,6 @@ pub async fn shutdown_app(app: AppHandle, state: State<'_, MissionHandlerState>)
     }
 }
 
-/// Command for web log.
-/// 
-/// # Arguments
-/// 
-/// # Examples
-/// 
-/// ```js
-/// import { invoke } from '@tauri-apps/api/tauri'
-/// 
-/// await invoke('web_log', { level: "info", msg: "message from web" })
-///     .then(res => {
-///         console.log(res.data)
-///     })
-///     .catch(err => {
-///         console.error(err)
-///     })
-/// ```
 #[command]
 pub async fn web_log(level: &str, msg: &str, state: State<'_, MissionHandlerState>) -> Result<Response<bool>, Response<bool>> {
     let mut guard = state.0.lock().await;

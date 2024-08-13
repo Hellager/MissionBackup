@@ -1,7 +1,3 @@
-//! # State
-//! 
-//! `state` module contains all about state that managed by tauri.
-
 use tokio::{runtime::Handle, sync::mpsc::Receiver, sync::Mutex};
 use std::io::{Error, ErrorKind};
 use crate::utils::logger::initialize_logger;
@@ -22,25 +18,13 @@ use crate::db::{
 };
 use uuid::Uuid;
 
-/// Status for handler services
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HandlerStatus {
-    /// Whether log service available
     pub log: bool,
-
-    /// Whether app instance available
     pub app: bool,
-
-    /// Whether config service available
     pub config: bool,
-
-    /// Whether database service available
     pub database: bool,
-
-    /// Whether cron service available
     pub cron: bool,
-
-    /// Whether watcher service available
     pub watcher: bool,
 }
 
@@ -57,33 +41,15 @@ impl Default for HandlerStatus {
     }
 }
 
-/// State struct for app mission
 pub struct MissionHandler {
-    /// Whether initialized
     pub is_set: bool,
-
-    /// Service status
     pub status: HandlerStatus,
-
-    /// App config
     pub config: AppConfig,
-
-    /// Whether log service available
     pub log_handler: Option<String>,
-    
-    /// App handle for cur app instance
     pub app_handler: Option<AppHandle>,
-        
-    /// Connection to database
     pub db_handler: Option<SqliteConnection>,
-
-    /// Cron handler for cron jobs
     pub cron_handler: Option<JobScheduler>,
-
-    /// Watcher handler for monitor jobs
     pub watcher_handler: Option<Debouncer<ReadDirectoryChangesWatcher, FileIdMap>>,
-    
-    /// Receiver for watcher handler
     pub watcher_receiver: Option<Receiver<Result<Vec<DebouncedEvent>, Vec<NotifyError>>>>,
 
     /// Cron jobs
@@ -96,13 +62,11 @@ pub struct MissionHandler {
 }
 
 impl MissionHandler {
-    /// Init app status with default value.
     fn init_app_status(&mut self) -> Result<(), std::io::Error> {
         self.status = HandlerStatus::default();
         Ok(())
     }
 
-    /// Init app config from file, it config file not exists, use default config.
     fn init_app_config(&mut self) -> Result<(), std::io::Error> {
         use crate::config::{ load_app_config, save_app_config };
 
@@ -124,7 +88,6 @@ impl MissionHandler {
         }   
     }
 
-    /// Init app log handler.
     fn init_logger_handler(&mut self) -> Result<(), std::io::Error> {
         if let None = self.log_handler {
             match initialize_logger(None, None) {
@@ -148,7 +111,6 @@ impl MissionHandler {
         }
     }
 
-    /// Init app handler.
     fn init_app_handler(&mut self) -> Result<(), std::io::Error> {
         if let None = self.app_handler {
             self.status.app = false;
@@ -161,7 +123,6 @@ impl MissionHandler {
         Ok(())
     }
 
-    /// Init database handler.
     pub fn init_db_handler(&mut self) -> Result<(), std::io::Error> {
         use crate::db::{establish_sqlite_connection, init_database};
 
@@ -191,7 +152,6 @@ impl MissionHandler {
         }
     }
 
-    /// Init cron handler.
     async fn init_cron_handler(&mut self) -> Result<(), std::io::Error> {
         if let None = self.cron_handler {
             if let Ok(handler) = JobScheduler::new().await {
@@ -213,7 +173,6 @@ impl MissionHandler {
         Ok(())
     }
 
-    /// Init watcher handler.
     async fn init_watcher_handler(&mut self) -> Result<(), std::io::Error> {
         if let None = self.watcher_handler {
             let (tx, rx) = tokio::sync::mpsc::channel(1);
@@ -258,7 +217,6 @@ impl MissionHandler {
         }
     }
 
-    /// Initialize mission handler in sequence.
     pub async fn initialize(&mut self) -> Result<(), std::io::Error> {
         self.init_app_status()?;        
         self.init_logger_handler()?;
@@ -272,7 +230,6 @@ impl MissionHandler {
         Ok(())
     }
 
-    /// Shutdown mission handler in sequence.
     pub fn shutdown(&mut self) -> Result<(), std::io::Error> {      
         use crate::config::save_app_config;
 
@@ -281,7 +238,6 @@ impl MissionHandler {
         Ok(())
     }
 
-    /// Watch change in path
     pub async fn watch(&mut self, path: &str, mission_id: &str) -> Result<(), std::io::Error> {
         use crate::db::{establish_sqlite_connection, backup::create_backup};
         use super::cmd::Response;
@@ -338,7 +294,6 @@ impl MissionHandler {
         Ok(())
     }
 
-    /// create job for mission
     pub async fn create_job(&mut self, mission: &Mission) -> Result<bool, std::io::Error> {
         use crate::db::query_db_record;
 
@@ -350,7 +305,7 @@ impl MissionHandler {
 
                 let config = &records[0].procedure;
                 match config.trigger {
-                    1 => { // Cron
+                    1 => {
                         self.create_cron_job(mission, config).await?;
                     },
                     2 => {
@@ -366,7 +321,6 @@ impl MissionHandler {
         Ok(true)
     }
 
-    /// create cron job for mission, mission will be executed by cron expression
     async fn create_cron_job(&mut self, mission: &Mission, procedure: &Procedure) -> Result<bool, std::io::Error> {
         use tokio_cron_scheduler::Job;
         use crate::db::{establish_sqlite_connection, mission::update_mission_time, backup::create_backup};
@@ -375,12 +329,6 @@ impl MissionHandler {
         let callback_id = mission.clone().mission_id;
         let callback_app = self.app_handler.clone();
         let create_res = Job::new(procedure.cron_expression.as_str(), move |_uuid, _l| {
-            // if let Ok(mut conn) = establish_sqlite_connection() {
-            //     if let Ok(backup) = create_backup(&callback_mission.mission_id, &mut conn) {
-            //         info!("create backup success: {:?}", backup);
-            //     }
-            // }
-
             if let Some(app) = &callback_app {
                 if let Ok(mut conn) = establish_sqlite_connection() {
                     match create_backup(&callback_id, &mut conn) {
@@ -425,7 +373,6 @@ impl MissionHandler {
         Ok(true)
     }
 
-    /// create monitor job, mission will be executed if any change happens in watch path
     async fn create_monitor_job(&mut self, mission: &Mission) -> Result<bool, std::io::Error> {
         use crate::db::query_db_record;
         
@@ -435,11 +382,7 @@ impl MissionHandler {
                     return Err(Error::from(ErrorKind::Unsupported));
                 }
 
-                // let callback_mission = mission.clone();
-                // let callback_app = self.app_handler.clone();
-                // let config = &procedures[0].procedure;
                 let create_res = self.watch(&mission.src_path.as_str(), &mission.mission_id.as_str()).await;
-
                 match create_res {
                     Ok(()) => {
                         info!("create monitore job success for mission {}", mission.name);
@@ -539,5 +482,4 @@ impl MissionHandler {
     }
 }
 
-/// MissionHandler state, will managed by tauri
 pub struct MissionHandlerState(pub Mutex<MissionHandler>);

@@ -1,27 +1,6 @@
-//! # Setup
-//! 
-//! `setup` module contains functions about setup tauri app itself and its' commands.
 use tauri::{App, Manager};
 use std::collections::HashMap;
 
-/// Setup tauri app.
-/// 
-/// # Arguments
-/// 
-/// * `app` - An app instance
-/// 
-/// # Examples
-/// 
-/// ```
-/// use core::setup::setup_handler;
-/// 
-/// fn main() {
-///     tauri::Builder::default()
-///         .setup(crate::core::setup::setup_handler)
-///         .run(tauri::generate_context!())
-///         .expect("error while running tauri application");
-/// }
-/// ```
 pub fn setup_handler(app: &mut App) -> Result<(), Box<dyn std::error::Error + 'static>> {
     use super::state::{ MissionHandler, HandlerStatus, MissionHandlerState };
     use super::window;
@@ -57,22 +36,6 @@ pub fn setup_handler(app: &mut App) -> Result<(), Box<dyn std::error::Error + 's
     Ok(())
 }
 
-/// Setup tauri commands.
-/// 
-/// # Arguments
-/// 
-/// # Examples
-/// 
-/// ```
-/// use core::setup::setup_command;
-/// 
-/// fn main() {
-///     tauri::Builder::default()
-///         .invoke_handler(crate::core::setup::setup_command())
-///         .run(tauri::generate_context!())
-///         .expect("error while running tauri application");
-/// }
-/// ```
 pub fn setup_command() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
     use super::cmd::*;
 
