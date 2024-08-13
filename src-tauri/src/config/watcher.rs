@@ -1,10 +1,5 @@
-//! # Watcher
-//! 
-//! `watcher` module contains all configuration about app's wacher handler related.
-
 use serde::{Serialize, Deserialize};
 
-/// Configuration for watcher
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WatcherConfig {
     /// Watcher timeout in secs

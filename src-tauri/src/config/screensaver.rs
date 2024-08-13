@@ -1,10 +1,5 @@
-//! # Screen
-//! 
-//! `screen` module contains all configuration about app's screen related.
-
 use serde::{Serialize, Deserialize};
 
-/// Configuration for screen
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScreensaverConfig {
     /// Whether enable screensaver

@@ -1,11 +1,6 @@
-//! # System
-//! 
-//! `system` module contains all configuration about app's system related.
-
 use serde::{Serialize, Deserialize};
 use crate::utils::common::{get_sys_locale, get_sys_theme};
 
-/// Configuration for system
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SystemConfig {
     /// Theme config
