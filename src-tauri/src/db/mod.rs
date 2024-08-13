@@ -18,19 +18,11 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
-/// Struct Record
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Record {
-    /// Backup record
     pub backup: Backup,
-
-    /// Ignore record
     pub ignore: Ignore,
-
-    /// Mission record
     pub mission: Mission,
-
-    /// Procedure record
     pub procedure: Procedure,
 }
 
@@ -45,89 +37,15 @@ impl Default for Record {
     }
 }
 
-/// Establish connection to sqlite.
-/// 
-/// Will use env variable `DATABASE_URL` as default database path.
-/// 
-/// If `DATABASE_URL` not exists: 
-/// In debug mode, will create a new database at app home directory.
-/// In release mode, will create a new database at app project data directory.
-/// 
-/// # Arguments
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::establish_sqlite_connection;
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     println!("connect to sqlite success");
-/// }
-/// ```
 pub fn establish_sqlite_connection() -> Result<SqliteConnection, diesel::result::ConnectionError> {
-    use std::env;
-    use dotenvy::dotenv;
-    use std::path::Path;
-    use log::error;
-    use crate::utils::explorer::create_all;
-    #[cfg(debug_assertions)]
-    use crate::utils::common::get_app_home_dir;
-    #[cfg(not(debug_assertions))]
-    use directories::ProjectDirs;
+    use self::utils::get_db_path;
 
-    dotenv().ok();
-
-    let mut database_url = env::var("DATABASE_URL").unwrap_or("".to_string());
-    if database_url.is_empty() {
-        #[cfg(not(debug_assertions))]
-        {
-            let application = option_env!("CARGO_PKG_NAME").unwrap_or("mission-backup");
-            if let Some(proj_dirs) = ProjectDirs::from(
-                "dev",
-                "",
-                application
-            ) {
-                database_url = proj_dirs.data_dir().join("database").join("mission_backup.db3").display().to_string();
-            }            
-        }
-        
-        #[cfg(debug_assertions)]
-        if let Ok(app_dir) = get_app_home_dir() {
-            database_url = app_dir.join("debug_db.db3").display().to_string();
-        }
+    match get_db_path() {
+        Ok(database_url) => SqliteConnection::establish(&database_url),
+        Err(_) => Err(diesel::result::ConnectionError::InvalidConnectionUrl("".to_string()))
     }
-
-    if !Path::new(&database_url).exists() {
-        if let Err(error) = create_all(&database_url, "file") {
-            error!("Failed to create database, errMsg: {error}");
-        }
-    }
-
-    SqliteConnection::establish(&database_url)
 }
 
-/// Initialize database when release.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, init_database};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match init_database(&mut conn) {
-///         Ok(_) => {
-///             println!("initialize database success");
-///         },
-///         Err(error) => {
-///             println!("failed to initialize database, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn init_database(conn: &mut SqliteConnection) -> Result<(), std::io::Error> {
     use std::io::{ Error, ErrorKind };
     use log::error;
@@ -143,31 +61,6 @@ pub fn init_database(conn: &mut SqliteConnection) -> Result<(), std::io::Error> 
     }
 }
 
-/// Create record and insert into database.
-/// 
-/// # Arguments
-/// 
-/// * `table` - Which table to handle.
-/// * `data` - Data that includes record about table.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, create_db_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut record = Record::default();
-///     match create_db_record("mission", &mut record, &mut conn) {
-///         Ok(record) => {
-///             println!("create record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to create record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn create_db_record(table: &str, data: &mut Record, conn: &mut SqliteConnection) -> Result<Record, diesel::result::Error> {
     use diesel::result::Error;
     
@@ -192,31 +85,6 @@ pub fn create_db_record(table: &str, data: &mut Record, conn: &mut SqliteConnect
     Ok(data.clone())
 }
 
-/// Update records in database.
-/// 
-/// # Arguments
-/// 
-/// * `table` - Which table to handle.
-/// * `data` - Data that includes record about table.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, create_db_record};
-/// 
-/// if let Ok(mut conn) = update_db_record() {
-///     let mut record = Record::default();
-///     match update_db_record("mission", record, &mut conn) {
-///         Ok(records) => {
-///             println!("update record: {:?}", records);
-///         },
-///         Err(error) => {
-///             println!("failed to update record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn update_db_record(table: &str, data: &mut Record, conn: &mut SqliteConnection) -> Result<Record, diesel::result::Error> {
     use diesel::result::Error;
     
@@ -241,30 +109,6 @@ pub fn update_db_record(table: &str, data: &mut Record, conn: &mut SqliteConnect
     Ok(data.clone())    
 }
 
-/// Get records from database.
-/// 
-/// # Arguments
-/// 
-/// * `table` - Which table to handle.
-/// * `uid` - Uuid for record, if `None`, get all.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, create_db_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match query_db_record("mission", None, &mut conn) {
-///         Ok(records) => {
-///             println!("get records: {:?}", records);
-///         },
-///         Err(error) => {
-///             println!("failed to get records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn query_db_record(table: &str, uid: Option<&str>, conn: &mut SqliteConnection) -> Result<Vec<Record>, diesel::result::Error> {
     use diesel::result::Error;
     let mut res: Vec<Record> = Vec::new();
@@ -314,31 +158,6 @@ pub fn query_db_record(table: &str, uid: Option<&str>, conn: &mut SqliteConnecti
     Ok(res)
 }
 
-/// Delete records in database.
-/// 
-/// # Arguments
-/// 
-/// * `table` - Which table to handle.
-/// * `uuid_0` - Uuid for record, if `None`, get all.
-/// * `uuid_1` - Uuid for record, if `None`, get all.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, create_db_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match query_db_record("mission", None, &mut conn) {
-///         Ok(records) => {
-///             println!("get records: {:?}", records);
-///         },
-///         Err(error) => {
-///             println!("failed to get records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn delete_db_record(table: &str, uuid_0: Option<&str>, uuid_1: Option<&str>, conn: &mut SqliteConnection) -> Result<usize, diesel::result::Error> {
     use diesel::result::Error;
     let remove_cnt: usize;
@@ -364,29 +183,6 @@ pub fn delete_db_record(table: &str, uuid_0: Option<&str>, uuid_1: Option<&str>,
     Ok(remove_cnt)    
 }
 
-/// Clear table records.
-/// 
-/// # Arguments
-/// 
-/// * `table` - Which table to handle.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, clear_db_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clear_db_record("mission", &mut conn) {
-///         Ok(cnt) => {
-///             println!("clear total {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clear records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clear_db_record(table: &str, conn: &mut SqliteConnection) -> Result<usize, diesel::result::Error> {
     use diesel::result::Error;
     let remove_cnt: usize;
@@ -412,31 +208,6 @@ pub fn clear_db_record(table: &str, conn: &mut SqliteConnection) -> Result<usize
     Ok(remove_cnt)    
 }
 
-/// Clean db records.
-/// 
-/// Delete `is_deleted` items and reorder the remaining id.
-/// 
-/// # Arguments
-/// 
-/// * `table` - Which table to handle.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, clean_db_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clean_db_record("mission", &mut conn) {
-///         Ok(cnt) => {
-///             println!("table {} cleaned!", "mission");
-///         },
-///         Err(error) => {
-///             println!("failed to clean table, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clean_db_record(table: &str, conn: &mut SqliteConnection) -> Result<usize, diesel::result::Error> {
     use diesel::result::Error;
     let remove_cnt: usize;

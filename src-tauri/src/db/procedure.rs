@@ -1,7 +1,3 @@
-//! # Procedure
-//! 
-//! `procedure` module contains all functions about handle 'procedure' table.
-
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use chrono::{NaiveDateTime, Utc};
@@ -9,21 +5,13 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::utils::common::rand_number;
 
-/// Struct Procedure
 #[derive(Debug, Queryable, Selectable, Insertable, AsChangeset, Serialize, Deserialize, Clone)]
 #[diesel(table_name = super::schema::procedure)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Procedure {
-    /// Primary key for table
     pub id: i32,
-
-    /// Uuid for procedure
     pub procedure_id: String,
-
-    /// Procedure name
     pub name: String,
-
-    /// Whether has ignores
     pub has_ignores: bool,
 
     /// Ignore method
@@ -79,36 +67,15 @@ pub struct Procedure {
     /// 
     /// `3` - days and size restrict
     pub restrict: i16,
-
-    /// Restrict days
     pub restrict_days: i16,
+    pub restrict_size: i64, // in bytes
 
-    /// Restrict size, in byte
-    pub restrict_size: i64,
-
-    /// Reserved for future use
     pub reserved_0: String,
-
-    /// Reserved for future use
     pub reserved_1: String,
-
-    /// Reserved for future use
     pub reserved_2: String,
-
-    /// Procedure create time
     pub create_at: NaiveDateTime,
-
-    /// Procedure update time
     pub update_at: NaiveDateTime,
-    
-    /// Whether been deleted
-    /// 
-    /// `0` - not deleted
-    /// 
-    /// `1` - been deleted
     pub is_deleted: i16,
-
-    /// Delete time
     pub delete_at: NaiveDateTime,
 }
 
@@ -138,70 +105,6 @@ impl Default for Procedure {
     }
 }
 
-// #[derive(AsChangeset, Insertable)]
-// #[diesel(table_name = super::schema::procedure)]
-// pub struct UpdateProcedure<'a> {
-//     pub name:               Option<&'a String>,
-//     pub has_ignores:         Option<&'a bool>,
-//     pub ignore_method:      Option<&'a i16>,
-//     pub is_compress:        Option<&'a bool>,
-//     pub compress_format:    Option<&'a i16>,
-//     pub trigger:            Option<&'a i16>,
-//     pub cron_expression:    Option<&'a String>,
-//     pub restrict:           Option<&'a i16>,
-//     pub restrict_days:      Option<&'a i16>,
-//     pub restrict_size:      Option<&'a i64>,
-//     pub backup_method:      Option<&'a i16>,
-//     pub update_at:          Option<&'a NaiveDateTime>,
-//     pub is_deleted:         Option<&'a i16>,
-//     pub delete_at:          Option<&'a NaiveDateTime>,
-// }
-
-// impl UpdateProcedure<'_> {
-//     pub fn from(data: &Procedure) -> UpdateProcedure {
-//         UpdateProcedure {
-//             name: Some(&data.name),
-//             has_ignores: Some(&data.has_ignores),
-//             ignore_method: Some(&data.ignore_method),
-//             is_compress: Some(&data.is_compress),
-//             compress_format: Some(&data.compress_format),
-//             trigger: Some(&data.trigger),
-//             cron_expression: Some(&data.cron_expression),
-//             restrict: Some(&data.restrict),
-//             restrict_days: Some(&data.restrict_days),
-//             restrict_size: Some(&data.restrict_size),
-//             backup_method: Some(&data.backup_method),
-//             update_at: Some(&data.update_at),
-//             is_deleted: Some(&data.is_deleted),
-//             delete_at: Some(&data.delete_at),
-//         }
-//     }
-// }
-
-/// Create procedure record and insert into database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `data` - Data for procedure.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, procedure::create_procedure_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut procedure = Procedure::default();
-///     match create_procedure_record(&mut conn, &mut procedure) {
-///         Ok(record) => {
-///             println!("create record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to create record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn create_procedure_record(
     conn: &mut SqliteConnection,
     data: &mut Procedure
@@ -220,31 +123,6 @@ pub fn create_procedure_record(
         .get_result(conn)
 }
 
-/// Update procedure record in database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `data` - Updated Data for procedure.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, procedure::update_procedure_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut procedure = Procedure::default();
-///     procedure.name = "procedure_1".to_string();
-///     match update_procedure_record(&mut conn, &mut procedure) {
-///         Ok(record) => {
-///             println!("update record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to update record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn update_procedure_record(
     conn: &mut SqliteConnection,
     data: &mut Procedure,
@@ -261,29 +139,6 @@ pub fn update_procedure_record(
         .get_result(conn)
 }
 
-/// Get procedure records from database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `pid` - Uuid for procedure, if `None`, get all.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, procedure::query_procedure_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match query_procedure_record(&mut conn, None) {
-///         Ok(records) => {
-///             println!("get all records: {:?}", records);
-///         },
-///         Err(error) => {
-///             println!("failed to get records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn query_procedure_record(
     conn: &mut SqliteConnection,
     pid: Option<&str>,
@@ -305,30 +160,6 @@ pub fn query_procedure_record(
     }
 }
 
-/// Delete procedure record in database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `pid` - Uuid for procedure, delete single procedure records.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, procedure::delete_procedure_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let pid = "0af123df-54ac-4030-beb6-1929c218c099";
-///     match delete_procedure_record(&mut conn, Some(&pid)) {
-///         Ok(cnt) => {
-///             println!("delete {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to delete records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn delete_procedure_record(
     conn: &mut SqliteConnection,
     pid: Option<&str>,
@@ -352,28 +183,6 @@ pub fn delete_procedure_record(
     }
 }
 
-/// Clear 'procedure' table records.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, procedure::clear_procedure_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clear_procedure_record(&mut conn) {
-///         Ok(cnt) => {
-///             println!("clear table with total {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clear records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clear_procedure_record(
     conn: &mut SqliteConnection, 
 ) -> Result<usize, diesel::result::Error> {
@@ -383,30 +192,6 @@ pub fn clear_procedure_record(
         .execute(conn)
 }
 
-/// Clean 'procedure' table records.
-/// 
-/// Physically delete records where `is_deleted` is `1`, and reorder the remaining records.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, procedure::clean_procedure_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clean_procedure_record(&mut conn) {
-///         Ok(cnt) => {
-///             println!("cleaned {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clean records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clean_record(
     conn: &mut SqliteConnection, 
 ) -> Result<usize, diesel::result::Error> {

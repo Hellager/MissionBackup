@@ -1,7 +1,3 @@
-//! # Mission
-//! 
-//! `mission` module contains all functions about handle 'mission' table.
-
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use chrono::{NaiveDateTime, Utc};
@@ -9,21 +5,13 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::utils::common::rand_number;
 
-/// Struct Mission
 #[derive(Debug, Queryable, Selectable, Insertable, AsChangeset, Serialize, Deserialize, Clone)]
 #[diesel(table_name = super::schema::mission)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Mission {
-    /// Primary key for table
     pub id: i32,
-
-    /// Uuid for mission
     pub mission_id: String,
-
-    /// Using which procedure
     pub procedure_id: String,
-
-    /// Mission name
     pub name: String,
 
     /// Mission status
@@ -34,8 +22,6 @@ pub struct Mission {
     /// 
     /// `2` - backuping
     pub status: i16,
-
-    /// Description for mission
     pub description: String,
 
     /// Target source path(absolute)
@@ -53,35 +39,18 @@ pub struct Mission {
     /// `2` - directory
     pub path_type: i16,
 
-    /// Mission next runtime
+    /// for cron job
     pub next_runtime: NaiveDateTime,
 
-    /// Mission last trigger time
+    /// for monitor job
     pub last_trigger: NaiveDateTime,
 
-    /// Reserved for future use
     pub reserved_0: String,
-
-    /// Reserved for future use
     pub reserved_1: String,
-
-    /// Reserved for future use
     pub reserved_2: String,
-    
-    /// Mission create time
     pub create_at: NaiveDateTime,
-
-    /// Mission update time
     pub update_at: NaiveDateTime,
-
-    /// Whether been deleted
-    /// 
-    /// `0` - not deleted
-    /// 
-    /// `1` - been deleted
     pub is_deleted: i16,
-
-    /// Delete time
     pub delete_at: NaiveDateTime,
 }
 
@@ -110,30 +79,6 @@ impl Default for Mission {
     }
 }
 
-/// Create mission record and insert into database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `data` - Data for mission.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::create_mission_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut mission = Mission::default();
-///     match create_mission_record(&mut conn, &mut mission) {
-///         Ok(record) => {
-///             println!("create record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to create record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn create_mission_record(
     conn: &mut SqliteConnection,
     data: &mut Mission
@@ -152,31 +97,6 @@ pub fn create_mission_record(
         .get_result(conn)
 }
 
-/// Update mission record in database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `data` - Updated Data for mission.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::update_mission_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut mission = Mission::default();
-///     mission.name = "John Wick".to_string();
-///     match update_ignore_record(&mut conn, &mut mission) {
-///         Ok(record) => {
-///             println!("update record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to update record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn update_mission_record(
     conn: &mut SqliteConnection,
     data: &mut Mission,
@@ -193,32 +113,6 @@ pub fn update_mission_record(
         .get_result(conn)
 }
 
-/// Update mission status in database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `stat` - The status to update.
-/// * `mid` - Which mission to update.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::update_mission_status};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let status = 1;
-///     let mid = "73d96957-f383-4f6e-8fb8-b0d3824d0fc9";
-///     match update_mission_time(&mut conn, status, mid) {
-///         Ok(record) => {
-///             println!("update mission time: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to update mission time, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn update_mission_status(
     conn: &mut SqliteConnection,
     stat: i16,
@@ -233,34 +127,6 @@ pub fn update_mission_status(
         .get_result(conn)
 }
 
-/// Update mission next_runtime or last_trigger time in database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `label` - Determine which time to update.('next', 'last')
-/// * `time` - The time to update.
-/// * `mid` - Which mission to update.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::update_mission_time};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let label = "next";
-///     let time = chrono::Utc::now().naive_utc();
-///     let mid = "73d96957-f383-4f6e-8fb8-b0d3824d0fc9";
-///     match update_mission_time(&mut conn, label &time, mid) {
-///         Ok(record) => {
-///             println!("update mission time: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to update mission time, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn update_mission_time(
     conn: &mut SqliteConnection,
     label: &str,
@@ -292,29 +158,6 @@ pub fn update_mission_time(
     }
 }
 
-/// Get mission records from database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `mid` - Uuid for mission, if `None`, get all.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::query_mission_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match query_mission_record(&mut conn, None) {
-///         Ok(records) => {
-///             println!("get all records: {:?}", records);
-///         },
-///         Err(error) => {
-///             println!("failed to get records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn query_mission_record(
     conn: &mut SqliteConnection,
     mid: Option<&str>,
@@ -336,30 +179,6 @@ pub fn query_mission_record(
     }
 }
 
-/// Delete mission record in database logically.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `mid` - Uuid for mission, delete single mission records.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::delete_mission_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mid = "73d96957-f383-4f6e-8fb8-b0d3824d0fc9";
-///     match delete_mission_record(&mut conn, Some(mid)) {
-///         Ok(cnt) => {
-///             println!("delete {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to delete records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn delete_mission_record(
     conn: &mut SqliteConnection,
     mid: Option<&str>,
@@ -383,28 +202,6 @@ pub fn delete_mission_record(
     }
 }
 
-/// Clear 'mission' table records.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::clear_mission_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clear_mission_record(&mut conn) {
-///         Ok(cnt) => {
-///             println!("clear table with total {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clear records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clear_mission_record(
     conn: &mut SqliteConnection, 
 ) -> Result<usize, diesel::result::Error> {
@@ -414,30 +211,6 @@ pub fn clear_mission_record(
         .execute(conn)
 }
 
-/// Get mission related record, return related mission and procedure.
-/// 
-/// # Arguments
-/// 
-/// * `mid` - Target mission id.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::get_mission_related_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mid = "73d96957-f383-4f6e-8fb8-b0d3824d0fc9";
-///     match get_mission_related_record(mid, &mut conn) {
-///         Ok(record) => {
-///             println!("related record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to get related record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn get_mission_related_record(mid: &str, conn: &mut SqliteConnection) -> Result<crate::db::Record, std::io::Error> {
     use super::{Record, procedure::query_procedure_record};
     use std::io::{ Error, ErrorKind };
@@ -467,30 +240,6 @@ pub fn get_mission_related_record(mid: &str, conn: &mut SqliteConnection) -> Res
     Err(Error::from(ErrorKind::NotFound))
 }
 
-/// Clean 'mission' table records.
-/// 
-/// Physically delete records where `is_deleted` is `1`, and reorder the remaining records.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, mission::clean_mission_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clean_mission_record(&mut conn) {
-///         Ok(cnt) => {
-///             println!("cleaned {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clean records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clean_record(
     conn: &mut SqliteConnection, 
 ) -> Result<usize, diesel::result::Error> {

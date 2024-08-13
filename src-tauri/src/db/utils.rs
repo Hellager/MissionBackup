@@ -1,7 +1,3 @@
-//! # Utils
-//! 
-//! `utils` module contains all functions about database utils.
-
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use serde::{Serialize, Deserialize};
@@ -19,20 +15,10 @@ pub struct DBInfo {
 /// Will use env variable `DATABASE_URL` as default database path.
 /// 
 /// If `DATABASE_URL` not exists: 
+/// 
 /// In debug mode, will create a new database at app home directory.
+/// 
 /// In release mode, will create a new database at app project data directory.
-/// 
-/// # Arguments
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::get_db_path;
-/// 
-/// if let Ok(db_path) = get_db_path() {
-///     println!("db path should be: {:?}", db_path);
-/// }
-/// ```
 pub fn get_db_path() -> Result<String, std::io::Error> {
     use std::env;
     use dotenvy::dotenv;
@@ -78,8 +64,6 @@ pub fn get_db_path() -> Result<String, std::io::Error> {
             database_url = abs_path.to_string();
         }
     }
-
-    println!("database url: {}", database_url);
 
     Ok(database_url)
 }

@@ -1,7 +1,3 @@
-//! # Ignore
-//! 
-//! `ignore` module contains all functions about handle 'ignore' table.
-
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use chrono::{NaiveDateTime, Utc};
@@ -10,46 +6,20 @@ use uuid::Uuid;
 use super::procedure::Procedure;
 use crate::utils::common::rand_number;
 
-/// Struct Ignore
 #[derive(Debug, Queryable, Selectable, Insertable, AsChangeset, Serialize, Deserialize, Clone)]
 #[diesel(table_name = super::schema::ignore)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Ignore {
-    /// Primary key for table
     pub id: i32,
-
-    /// Uuid for ignore
     pub ignore_id: String,
-
-    /// Belong to which procedure
     pub procedure_id: String,
-
-    /// Ignore keyword
     pub keyword: String,
-
-    /// Reserved for future use
     pub reserved_0: String,
-
-    /// Reserved for future use
     pub reserved_1: String,
-
-    /// Reserved for future use
     pub reserved_2: String,
-
-    /// Ignore create time
     pub create_at: NaiveDateTime,
-
-    /// Ignore update time
     pub update_at: NaiveDateTime,
-
-    /// Whether been deleted
-    /// 
-    /// `0` - not deleted
-    /// 
-    /// `1` - been deleted
     pub is_deleted: i16,
-
-    /// Delete time
     pub delete_at: NaiveDateTime,
 }
 
@@ -71,58 +41,6 @@ impl Default for Ignore {
     }
 }
 
-// #[derive(AsChangeset, Insertable)]
-// #[diesel(table_name = super::schema::ignore)]
-// pub struct UpdateIgnore<'a> {
-//     pub ignore_id:      Option<&'a String>,
-//     pub procedure_id:   Option<&'a String>,
-//     pub keyword:        Option<&'a String>,
-//     pub create_at:      Option<&'a NaiveDateTime>,
-//     pub update_at:      Option<&'a NaiveDateTime>,
-//     pub is_deleted:     Option<&'a i16>,
-//     pub delete_at:      Option<&'a NaiveDateTime>,
-// }
-
-// impl UpdateIgnore<'_> {
-//     pub fn from(data: &Ignore) -> UpdateIgnore {
-//         UpdateIgnore {
-//             ignore_id: Some(&data.ignore_id),
-//             procedure_id: Some(&data.procedure_id),
-//             keyword: Some(&data.keyword),
-//             create_at: Some(&data.create_at),
-//             update_at: Some(&data.update_at),
-//             is_deleted: Some(&data.is_deleted),
-//             delete_at: Some(&data.delete_at),
-//         }
-//     }
-// }
-
-/// Create ignore record and insert into database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `data` - Data for ignore.
-/// * `procedure` - Which procedure generates this ignore
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::create_ignore_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut ignore = Ignore::default();
-///     let procedure = Procedure::default();
-///     match create_ignore_record(&mut conn, &mut ignore, &procedure) {
-///         Ok(record) => {
-///             println!("create record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to create record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn create_ignore_record(
     conn: &mut SqliteConnection,
     data: &mut Ignore,
@@ -143,31 +61,6 @@ pub fn create_ignore_record(
         .get_result(conn)
 }
 
-/// Update ignore record in database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `data` - Updated Data for ignore.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::update_ignore_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let mut ignore = Ignore::default();
-///     ignore.keyword = "Hello, world!".to_string();
-///     match update_ignore_record(&mut conn, &mut ignore) {
-///         Ok(record) => {
-///             println!("update record: {:?}", record);
-///         },
-///         Err(error) => {
-///             println!("failed to update record, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn update_ignore_record(
     conn: &mut SqliteConnection,
     data: &mut Ignore,
@@ -184,29 +77,6 @@ pub fn update_ignore_record(
         .get_result(conn)
 }
 
-/// Get ignore records from database.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `uuid` - Uuid for procedure, if `None`, get all.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::query_ignore_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match query_ignore_record(&mut conn, None) {
-///         Ok(records) => {
-///             println!("get all records: {:?}", records);
-///         },
-///         Err(error) => {
-///             println!("failed to get records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn query_ignore_record(
     conn: &mut SqliteConnection,
     uuid: Option<&str>,
@@ -228,31 +98,6 @@ pub fn query_ignore_record(
     }
 }
 
-/// Delete ignore record in database logically.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// * `nid` - Uuid for ignore, delete single ignore record.
-/// * `pid` - Uuid for procedure, delete all related ignore records.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::delete_ignore_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let pid = "e56da9c2-851e-4cb5-a896-f371f2e3997f";
-///     match delete_ignore_record(&mut conn, None, Some(pid)) {
-///         Ok(cnt) => {
-///             println!("delete {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to delete records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn delete_ignore_record(
     conn: &mut SqliteConnection,
     nid: Option<&str>,
@@ -281,28 +126,6 @@ pub fn delete_ignore_record(
     Err(diesel::result::Error::NotFound)
 }
 
-/// Clear 'ignore' table records.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::clear_ignore_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clear_ignore_record(&mut conn) {
-///         Ok(cnt) => {
-///             println!("clear table with total {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clear records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clear_ignore_record(
     conn: &mut SqliteConnection, 
 ) -> Result<usize, diesel::result::Error> {
@@ -312,30 +135,6 @@ pub fn clear_ignore_record(
         .execute(conn)
 }
 
-/// Clean 'ignore' table records.
-/// 
-/// Physically delete records where `is_deleted` is `1`, and reorder the remaining records.
-/// 
-/// # Arguments
-/// 
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::clean_ignore_record};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     match clean_ignore_record(&mut conn) {
-///         Ok(cnt) => {
-///             println!("cleaned {} records", cnt);
-///         },
-///         Err(error) => {
-///             println!("failed to clean records, errMsg: {:?}", error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn clean_record(
     conn: &mut SqliteConnection, 
 ) -> Result<usize, diesel::result::Error> {
@@ -355,30 +154,6 @@ pub fn clean_record(
     Ok(cleaned)   
 }
 
-/// Get procedure related ignores.
-/// 
-/// # Arguments
-/// 
-/// * `pid` - Target procedure.
-/// * `conn` - Connection to database.
-/// 
-/// # Examples
-/// 
-/// ```
-/// use db::{establish_sqlite_connection, ignore::get_procedure_ignores};
-/// 
-/// if let Ok(mut conn) = establish_sqlite_connection() {
-///     let pid = "e56da9c2-851e-4cb5-a896-f371f2e3997f";
-///     match get_procedure_ignores(pid, &mut conn) {
-///         Ok(ignores) => {
-///             println!("get ignores {:?} for procedure {}", ignores, pid);
-///         },
-///         Err(error) => {
-///             println!("failed to get ignores for procedure {}, errMsg: {:?}", pid, error);
-///         }
-///     }   
-/// }
-/// ```
 pub fn get_procedure_ignores(pid: &str, conn: &mut SqliteConnection) -> Vec<String> {
     let mut data = Vec::new();
     if let Ok(ignores) = query_ignore_record(conn, Some(pid)) {
