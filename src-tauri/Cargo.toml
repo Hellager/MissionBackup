@@ -22,4 +22,9 @@ tauri = { version = "2", features = [] }
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tauri-plugin-os = "2"
+dark-light = "1.1.1"
+wry = "0.47.0"
+rand = "0.8.5"
+sys-locale = "0.3.2"
 
