@@ -1,56 +1,26 @@
 {
   "name": "mission-backup",
-  "type": "module",
-  "version": "0.0.0",
   "private": true,
+  "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "prepare": "husky"
-  },
-  "config": {
-    "commitizen": {
-      "path": "node_modules/cz-git"
-    }
+    "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1",
-    "@vueuse/core": "^10.11.0",
-    "croner": "^8.1.0",
-    "cronstrue": "^2.50.0",
-    "dayjs": "^1.11.11",
-    "echarts": "^5.5.1",
-    "element-plus": "^2.7.6",
-    "lodash": "^4.17.21",
-    "pinia": "^2.1.7",
-    "pretty-bytes": "^6.1.1",
-    "tauri-plugin-autostart-api": "github:tauri-apps/tauri-plugin-autostart#v1",
-    "vue": "^3.3.4",
-    "vue-i18n": "^9.13.1",
-    "vue-router": "4"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-shell": "^2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.21.1",
-    "@commitlint/cli": "^19.3.0",
-    "@commitlint/config-conventional": "^19.2.2",
-    "@iconify-json/mdi": "^1.1.66",
-    "@tauri-apps/cli": "^1",
-    "@types/lodash": "^4.17.5",
-    "@vitejs/plugin-vue": "^5.0.4",
-    "cz-git": "^1.9.3",
-    "eslint": "^9.5.0",
-    "husky": "^9.0.11",
-    "less": "^4.2.0",
-    "lint-staged": "^15.2.7",
-    "typescript": "^5.0.2",
-    "unplugin-auto-import": "^0.17.6",
-    "unplugin-icons": "^0.19.0",
-    "unplugin-vue-components": "^0.27.1",
-    "vite": "^5.0.0",
-    "vue-tsc": "^1.8.5"
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1",
+    "@tauri-apps/cli": "^2"
   }
 }
