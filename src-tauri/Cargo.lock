@@ -2147,15 +2147,18 @@ dependencies = [
 name = "mission-backup"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "dark-light",
  "rand 0.8.5",
  "serde",
  "serde_json",
+ "sha2",
  "sys-locale",
  "tauri",
  "tauri-build",
  "tauri-plugin-os",
  "tauri-plugin-shell",
+ "url",
  "wry",
 ]
 
