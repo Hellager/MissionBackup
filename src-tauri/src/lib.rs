@@ -1,4 +1,5 @@
 mod utils;
+mod plugins;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -11,6 +12,7 @@ pub fn run() {
     use tauri_plugin_autostart::MacosLauncher;
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(plugins::on_another_instance))
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             Some(vec![]),

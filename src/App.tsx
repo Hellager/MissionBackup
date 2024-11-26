@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
+import { listen } from '@tauri-apps/api/event';
 import "./App.css";
 
 function App() {
@@ -25,6 +26,16 @@ function App() {
     isAutoStart = await isEnabled();
     setAutoStartMsg(`is auto start ${isAutoStart}`)
   }
+
+  async function listen_to_another_instance() {
+    const unlisten = await listen<string>('instance', (_) => {
+      alert("detect another instance");
+    });    
+  }
+
+  useEffect(() => {
+    listen_to_another_instance();
+  }, [])
 
   return (
     <main className="container">
