@@ -1,15 +1,29 @@
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
 import "./App.css";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [autoStartMsg, setAutoStartMsg] = useState("");
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
+  }
+
+  async function toggle_autostart() {
+    let isAutoStart = await isEnabled();
+    if (isAutoStart === true) {
+      await disable();
+    } else {
+      await enable();
+    }
+
+    isAutoStart = await isEnabled();
+    setAutoStartMsg(`is auto start ${isAutoStart}`)
   }
 
   return (
@@ -44,6 +58,18 @@ function App() {
         <button type="submit">Greet</button>
       </form>
       <p>{greetMsg}</p>
+
+      <form
+        className="row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          toggle_autostart();
+        }}
+      >
+        <span>AutoStart</span>
+        <button type="submit">Toggle</button>
+      </form>
+      <p>{autoStartMsg}</p>
     </main>
   );
 }

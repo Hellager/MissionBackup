@@ -9,6 +9,9 @@
     "core:default",
     "shell:allow-open",
     "os:default",
-    "os:allow-locale"
+    "os:allow-locale",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled"
   ]
 }
