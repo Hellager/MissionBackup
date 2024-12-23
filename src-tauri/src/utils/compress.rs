@@ -137,10 +137,10 @@ fn zip_dir<T>(
 where
     T: std::io::Write + std::io::Seek,
 {
+    use anyhow::Context;
     use std::fs::File;
     use std::io::{Read, Write};
     use std::path::Path;
-    use anyhow::Context;
 
     let mut zip = zip::ZipWriter::new(writer);
     let options = zip::write::SimpleFileOptions::default()

@@ -29,7 +29,7 @@ pub fn get_app_home_dir() -> Result<std::path::PathBuf, std::io::Error> {
 
 #[allow(dead_code)]
 /// Gets system locale.
-/// 
+///
 /// For tauri v2, we can use tauri-plugin-os to query os locale.
 ///
 /// # Arguments
