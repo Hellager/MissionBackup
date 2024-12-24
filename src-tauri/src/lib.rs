@@ -11,7 +11,7 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(crate::plugins::initialize_plugin_window_state())
         .plugin(crate::plugins::initialize_plugin_log())
         .plugin(crate::plugins::initialize_plugin_single_instance())
         .plugin(crate::plugins::initialize_plugin_autostart())

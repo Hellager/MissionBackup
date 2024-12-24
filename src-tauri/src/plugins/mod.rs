@@ -58,3 +58,13 @@ pub fn initialize_plugin_log<R: tauri::Runtime>() -> TauriPlugin<R> {
         .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
         .build()
 }
+
+pub fn initialize_plugin_window_state<R: tauri::Runtime>() -> TauriPlugin<R> {
+    use tauri_plugin_window_state::StateFlags;
+
+    let flags: StateFlags = StateFlags::POSITION | StateFlags::VISIBLE;
+
+    tauri_plugin_window_state::Builder::new()
+        .with_state_flags(flags)
+        .build()
+}
