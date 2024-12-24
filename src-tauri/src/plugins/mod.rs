@@ -27,9 +27,6 @@ pub fn initialize_plugin_log<R: tauri::Runtime>() -> TauriPlugin<R> {
         .clear_targets()
         .target(Target::new(TargetKind::Stdout))
         .target(Target::new(TargetKind::Webview))
-        .target(Target::new(TargetKind::LogDir {
-            file_name: Some("clean_recent".to_string()),
-        }))
         .level(LevelFilter::Debug)
         .format(|out, message, record| {
             out.finish(format_args!(
