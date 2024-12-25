@@ -42,7 +42,7 @@ pub fn get_app_home_dir() -> Result<std::path::PathBuf, std::io::Error> {
 /// let locale = get_sys_locale();
 /// println!("current locale: {:?}", locale),
 /// ```
-fn get_sys_locale() -> String {
+pub fn get_sys_locale() -> String {
     use sys_locale::get_locale;
 
     get_locale().unwrap_or_else(|| String::from("en-US"))
