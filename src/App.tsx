@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from '@tauri-apps/api/event';
 import "./App.css";
 
 function App() {
@@ -11,6 +12,14 @@ function App() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
   }
+
+  useEffect(() => {
+    setTimeout(async () => {
+      await listen('another_instance', (_) => {
+        alert('another_instance');
+      });
+    }, 0);
+  }, []);
 
   return (
     <main className="container">
