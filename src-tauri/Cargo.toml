@@ -1,70 +1,25 @@
 [package]
 name = "mission-backup"
-version = "0.0.0"
-description = "A cross-platform application helps you keeping local backups for your data."
-authors = ["stein"]
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
 edition = "2021"
-# documentation = "https://mission-backup.hellagur.com"
-homepage = "https://mission-backup.hellagur.com"
-repository = "https://github.com/Hellager/mission-backup"
-license = "Apache-2.0"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "mission_backup_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
-tauri-build = { version = "1", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "clipboard-all", "window-set-focus", "dialog-open", "dialog-save", "path-all", "window-minimize", "window-close", "window-unmaximize", "window-maximize", "window-unminimize", "window-hide", "window-show", "window-start-dragging", "system-tray", "shell-open"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-chrono = { version = "0.4.35", features = ["serde"] }
-sys-locale = "0.3.1"
-base64 = "0.22.0"
-sha2 = "0.10.8"
-url = "2.5.0"
-zip = "0.6.6"
-tar = "0.4.40"
-flate2 = "1.0.28"
-bzip2 = "0.4.4"
-xz2 = "0.1.7"
-sevenz-rust= {version="0.5.4", features= ["compress"] }
-walkdir = "2.5.0"
-ignore = "0.4.22"
-fs_extra = "1.3.0"
-dark-light = "1.1.1"
-wry = "0.24.6"
-rand = "0.8.5"
-byte-unit = "5.1.4"
-log = "0.4.20"
-time = "0.3.34"
-simplelog = "0.12.2"
-directories = "5.0.1"
-log4rs = {version="1.3.0", features= ["rolling_file_appender"] }
-tauri-plugin-autostart = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-toml = "0.8.12"
-window-shadows = "0.2.2"
-diesel = { version = "2.2.1", features = ["sqlite", "chrono", "returning_clauses_for_sqlite_3_35"] }
-libsqlite3-sys = { version = "^0", features = ["bundled"] }
-diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
-dotenvy = "0.15.7"
-tokio = "1.38.0"
-tokio-cron-scheduler = "0.10.2"
-notify = "6.1.1"
-notify-debouncer-full = "0.3.1"
-path-absolutize = "3.1.1"
 
-[dependencies.uuid]
-version = "1.8.0"
-features = [
-    "v4",                # Lets you generate random UUIDs
-    "fast-rng",          # Use a faster (but still sufficiently random) RNG
-    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
-]
-
-[features]
-# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
-
-[dev-dependencies]
-same-file = "1.0.6"
