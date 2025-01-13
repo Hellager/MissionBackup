@@ -1,4 +1,4 @@
-use tauri::{plugin::TauriPlugin, Emitter, Runtime, Manager};
+use tauri::{plugin::TauriPlugin, Emitter, Manager, Runtime};
 
 pub fn initialize_plugin_single_instance<R: Runtime>() -> TauriPlugin<R> {
     tauri_plugin_single_instance::init(|app, _, _| {
