@@ -15,6 +15,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(plugins::initialize_plugin_single_instance())
         .plugin(plugins::initialize_plugin_autostart())
+        .plugin(plugins::initialize_plugin_window_state())
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
