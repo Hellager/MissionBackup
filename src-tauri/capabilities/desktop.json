@@ -9,7 +9,11 @@
     "main"
   ],
   "permissions": [
+    "notification:default",
+    "shell:default",
+    "os:default",
     "autostart:default",
-    "window-state:default"
+    "window-state:default",
+    "log:default"
   ]
 }

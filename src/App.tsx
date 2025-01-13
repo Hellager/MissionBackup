@@ -3,6 +3,7 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from '@tauri-apps/api/event';
 import { enable, disable, isEnabled } from '@tauri-apps/plugin-autostart';
+import { debug, attachConsole } from '@tauri-apps/plugin-log';
 import "./App.css";
 
 function App() {
@@ -24,6 +25,10 @@ function App() {
       await listen('another_instance', (_) => {
         alert('another_instance');
       });
+
+      await attachConsole();
+
+      debug('Hello from React!');
     }, 0);
   }, []);
 

@@ -1,3 +1,4 @@
+mod core;
 mod plugins;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -16,6 +17,9 @@ pub fn run() {
         .plugin(plugins::initialize_plugin_single_instance())
         .plugin(plugins::initialize_plugin_autostart())
         .plugin(plugins::initialize_plugin_window_state())
+        .plugin(plugins::initialize_plugin_log())
+        .setup(core::setup::setup_handler)
+        .on_window_event(core::window::on_window_event)
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

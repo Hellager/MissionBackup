@@ -1,5 +1,6 @@
 use tauri::{Manager, Window, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
+use log::debug;
 
 pub fn on_window_event(window: &Window, event: &WindowEvent) {
     match event {
@@ -8,6 +9,7 @@ pub fn on_window_event(window: &Window, event: &WindowEvent) {
                 let app_handle = window.app_handle();
                 let state_flags: StateFlags = StateFlags::POSITION | StateFlags::VISIBLE;
                 app_handle.save_window_state(state_flags).unwrap();
+                debug!("Window state saved");
                 app_handle.exit(0);
             }
         }

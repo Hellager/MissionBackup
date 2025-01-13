@@ -25,3 +25,51 @@ pub fn initialize_plugin_window_state<R: tauri::Runtime>() -> TauriPlugin<R> {
         .with_state_flags(flags)
         .build()
 }
+
+#[cfg(debug_assertions)]
+pub fn initialize_plugin_log<R: tauri::Runtime>() -> TauriPlugin<R> {
+    use log::LevelFilter;
+    use tauri_plugin_log::{fern::colors::ColoredLevelConfig, Builder, Target, TargetKind};
+
+    const LOG_FILE_NAME: &str = env!("CARGO_PKG_NAME");
+
+    Builder::new()
+        .clear_targets()
+        .target(Target::new(TargetKind::Stdout))
+        .target(Target::new(TargetKind::Webview))
+        .target(Target::new(TargetKind::LogDir {
+            file_name: Some(LOG_FILE_NAME.to_string()),
+        }))
+        .level(LevelFilter::Debug)
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{} {}] {}",
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+        .with_colors(ColoredLevelConfig::default())
+        .build()
+}
+
+#[cfg(not(debug_assertions))]
+pub fn initialize_plugin_log<R: tauri::Runtime>() -> TauriPlugin<R> {
+    use log::LevelFilter;
+    use tauri_plugin_log::{Builder, Target, TargetKind};
+
+    const LOG_FILE_NAME: &str = env!("CARGO_PKG_NAME");
+
+    Builder::new()
+        .clear_targets()
+        .target(Target::new(TargetKind::LogDir {
+            file_name: Some(LOG_FILE_NAME.to_string()),
+        }))
+        .level(LevelFilter::Info)
+        .max_file_size(50_000)
+        .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+        .format(|out, message, record| out.finish(format_args!("[{}] {}", record.level(), message)))
+        .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+        .build()
+}
