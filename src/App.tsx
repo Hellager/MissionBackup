@@ -2,15 +2,21 @@ import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from '@tauri-apps/api/event';
+import { enable, disable, isEnabled } from '@tauri-apps/plugin-autostart';
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
+  const [hintMsg, setHintMsg] = useState("");
   const [name, setName] = useState("");
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  async function updateAutostart() {
+    let autoStartEnabled = await isEnabled();
+    if (autoStartEnabled) {
+      await disable();
+    } else {
+      await enable();
+    }
+    setHintMsg(`Autostart is now ${autoStartEnabled ? 'disabled' : 'enabled'}`);
   }
 
   useEffect(() => {
@@ -42,7 +48,7 @@ function App() {
         className="row"
         onSubmit={(e) => {
           e.preventDefault();
-          greet();
+          updateAutostart();
         }}
       >
         <input
@@ -50,9 +56,9 @@ function App() {
           onChange={(e) => setName(e.currentTarget.value)}
           placeholder="Enter a name..."
         />
-        <button type="submit">Greet</button>
+        <button type="submit">Toggle Autostart</button>
       </form>
-      <p>{greetMsg}</p>
+      <p>{hintMsg}</p>
     </main>
   );
 }

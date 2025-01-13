@@ -9,3 +9,9 @@ pub fn initialize_plugin_single_instance<R: Runtime>() -> TauriPlugin<R> {
         }
     })
 }
+
+pub fn initialize_plugin_autostart<R: tauri::Runtime>() -> TauriPlugin<R> {
+    use tauri_plugin_autostart::MacosLauncher;
+
+    tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None)
+}
